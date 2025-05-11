@@ -127,7 +127,7 @@ class FrameExtractor:
         return frames_data, original_fps, extraction_time
 
 # --- Moondream Worker Class (Same as before) ---
-@app.cls(gpu="a10g", timeout=180, image=moondream_image, max_containers=10, min_containers=1)
+@app.cls(gpu="a10g", timeout=180, image=moondream_image, max_containers=10, min_containers=0)
 class MoondreamWorker:
     @modal.enter()
     def load_model(self):
@@ -305,7 +305,7 @@ def _process_video_pipeline_internal(job_id: str, video_url: str, target_fps: in
 # --- Public Functions for Job Submission and Status ---
 
 # Exposed as web endpoint for job submission
-@app.function(min_containers=1)
+@app.function(min_containers=0)
 @modal.asgi_app()
 def api():
     from fastapi import FastAPI, HTTPException, Query, Path

@@ -280,7 +280,7 @@ To use a different model, update the `MODEL_ID` and `REVISION` constants at the 
 The application uses A10G GPUs by default. You can modify the GPU type and parallelism settings in the `@app.cls` decorator of the `MoondreamWorker` class.
 
 ```python
-@app.cls(gpu="a10g", timeout=180, image=moondream_image, max_containers=30, min_containers=1)
+@app.cls(gpu="a10g", timeout=180, image=moondream_image, max_containers=30, min_containers=0)
 class MoondreamWorker:
     # ... rest of the class
 ```
@@ -299,7 +299,7 @@ The benchmark script is designed to determine the optimal number of concurrent m
 
 ```python
 # Current implementation scales horizontally with many workers
-@app.cls(gpu="a10g", timeout=180, image=moondream_image, max_containers=30, min_containers=1)
+@app.cls(gpu="a10g", timeout=180, image=moondream_image, max_containers=30, min_containers=0)
 class MoondreamWorker:
     # ... rest of the class
 ```
