@@ -9,6 +9,7 @@ and save results in JSONL format.
 Usage:
     python moondream_client.py --video "https://example.com/video.mp4" --fps 1
     python moondream_client.py --batch video_urls.txt --fps 1 --question "What is in this scene?"
+    python moondream_client.py --batch video_urls.txt --output-file "custom_results.jsonl"
 """
 
 import argparse

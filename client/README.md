@@ -49,34 +49,150 @@ python moondream_client.py --batch video_urls.txt --fps 1 --question "What is ha
 - `--fps N`: Extract N frames per second (default: 1)
 - `--question TEXT`: Question to ask about each frame (default: "Describe this scene.")
 - `--output-dir DIR`: Directory to save results (default: "results")
+- `--output-file FILE`: Filename for results (default: "results.jsonl")
 
-## Output
+## API Specification
 
-Results are saved in two formats:
+### API Endpoints
 
-1. `<video_name>.jsonl` - Each line contains a JSON object with data for a single frame. Results from multiple jobs processing the same video are appended to this file, allowing for accumulated results over time.
+The client interacts with the following API endpoints:
 
-2. `results/full_results/<video_name>_<job_id>.json` - Complete job data including metadata and processing statistics, stored in a separate "full_results" directory to keep the main results directory clean.
+#### Submit a Job
 
-The JSONL format is particularly useful for data analysis, as it can be easily loaded into pandas or other data processing tools:
-
-```python
-import pandas as pd
-
-# Load data from JSONL file
-df = pd.read_json("results/video_name.jsonl", lines=True)
-
-# Show frame descriptions
-print(df[["timestamp_ms", "description"]])
-
-# Filter by specific job ID if needed
-job_results = df[df["job_id"] == "job_12345678"]
+```
+POST /api/submit
 ```
 
-This approach allows you to:
-- Maintain a single file per video, regardless of how many times you process it
-- Easily accumulate results from multiple processing runs (with different parameters)
-- Still track which results came from which job via the embedded job_id 
+Parameters:
+- `video_url` (string): URL of the video to process
+- `target_fps` (number): Frames per second to extract
+- `question` (string): Question to ask about each frame
+
+Example Request:
+```python
+response = requests.post(
+    "https://parsakhaz--moondream-video-processor-job-api.modal.run/api/submit",
+    params={
+        "video_url": "https://example.com/video.mp4",
+        "target_fps": 1,
+        "question": "Describe this scene."
+    }
+)
+```
+
+Example Response:
+```json
+{
+    "job_id": "job_12345678-abcd-efgh-ijkl-9876543210ab",
+    "status": "submitted",
+    "created_at": "2023-05-10T21:35:47.123456",
+    "video_url": "https://example.com/video.mp4",
+    "target_fps": 1,
+    "question": "Describe this scene."
+}
+```
+
+#### Get Job Status
+
+```
+GET /api/status/{job_id}
+```
+
+Example Request:
+```python
+response = requests.get(
+    "https://parsakhaz--moondream-video-processor-job-api.modal.run/api/status/job_12345678-abcd-efgh-ijkl-9876543210ab"
+)
+```
+
+Example Response (In Progress):
+```json
+{
+    "job_id": "job_12345678-abcd-efgh-ijkl-9876543210ab",
+    "status": "processing",
+    "progress": 45,
+    "created_at": "2023-05-10T21:35:47.123456",
+    "video_url": "https://example.com/video.mp4"
+}
+```
+
+Example Response (Completed):
+```json
+{
+    "job_id": "job_12345678-abcd-efgh-ijkl-9876543210ab",
+    "status": "completed",
+    "progress": 100,
+    "created_at": "2023-05-10T21:35:47.123456",
+    "completed_at": "2023-05-10T21:36:12.987654",
+    "video_url": "https://example.com/video.mp4",
+    "results_payload": {
+        "frame_results": [
+            {
+                "job_id_for_frame": "job_12345678-abcd-efgh-ijkl-9876543210ab",
+                "frame_idx": 0,
+                "timestamp_ms": 0,
+                "description": "A person walking on a street with buildings in the background.",
+                "processing_times_ms": {
+                    "image_encode": 25.32,
+                    "llm_inference": 342.18,
+                    "total_worker_frame_time": 372.64
+                },
+                "status": "success"
+            },
+            // Additional frames...
+        ],
+        "timings_seconds": {
+            "overall_pipeline_internal": 12.34,
+            "video_download": 0.89,
+            "frame_extraction": 1.23,
+            "inference": 10.22
+        },
+        "metadata": {
+            "video_duration_seconds": 60.0,
+            "frame_count": 60,
+            "target_fps": 1,
+            "question": "Describe this scene."
+        }
+    }
+}
+```
+
+## Output Format
+
+### JSONL Output Structure
+
+The client saves all frame results to a single JSONL file (default: `results/results.jsonl`). Each line in the file is a JSON object representing one frame with the following structure:
+
+```json
+{
+    "job_id_for_frame": "job_12345678-abcd-efgh-ijkl-9876543210ab",
+    "frame_idx": 0,
+    "timestamp_ms": 0,
+    "description": "A person walking on a street with buildings in the background.",
+    "processing_times_ms": {
+        "image_encode": 25.32,
+        "llm_inference": 342.18,
+        "total_worker_frame_time": 372.64
+    },
+    "status": "success",
+    "job_id": "job_12345678-abcd-efgh-ijkl-9876543210ab",
+    "video_url": "https://example.com/video.mp4"
+}
+```
+
+Fields:
+- `job_id_for_frame`: The ID of the job that processed this frame (matches the API response job_id)
+- `job_id`: The same as job_id_for_frame, duplicated for traceability
+- `video_url`: The URL of the video this frame was extracted from
+- `frame_idx`: The frame's index (0-based) in the extraction sequence
+- `timestamp_ms`: The frame's timestamp in milliseconds
+- `description`: The AI-generated description based on the provided question
+- `processing_times_ms`: Detailed timing information for this frame
+- `status`: Processing status for this frame ("success" or error message)
+
+### Full JSON Output Structure
+
+For each job, the client also saves a complete record of the job data in the `results/full_results/` directory, with a filename pattern of `job_{job_id}.json`. This file includes all the information returned by the API, including frame results and overall job metadata.
 
 ## Performance
 
@@ -84,15 +200,9 @@ Based on our tests, here are the actual processing times with warm containers (n
 
 | Video                                  | Duration | Frames Processed | Processing Time | FPS Setting |
 |----------------------------------------|----------|------------------|----------------|------------|
-| 214409_tiny.mp4 (cloud timelapse)      | 50 sec   | 251 frames       | 18.26 seconds  | 5 fps      |
-| Big_Buck_Bunny_360_10s_1MB.mp4         | 10 sec   | 50 frames        | 4.27 seconds   | 5 fps      |
-| ForBiggerBlazes.mp4                    | 15 sec   | 72 frames        | 5.68 seconds   | 5 fps      |
-
-For comparison, our earlier test with cold start and 1 FPS:
-
-| Video                                  | Duration | Frames Processed | Processing Time | Notes |
-|----------------------------------------|----------|------------------|----------------|-------|
-| 214409_tiny.mp4 (cloud timelapse)      | 50 sec   | 51 frames        | 38.87 seconds  | Includes ~30s cold start time; actual processing time was ~9s |
+| 214409_tiny.mp4 (cloud timelapse)      | 50 sec   | 251 frames       | 47.62 seconds  | 5 fps      |
+| Big_Buck_Bunny_360_10s_1MB.mp4         | 10 sec   | 50 frames        | 4.68 seconds   | 5 fps      |
+| ForBiggerBlazes.mp4                    | 15 sec   | 72 frames        | 6.15 seconds   | 5 fps      |
 
 Processing time depends on:
 - Cold start time (first request after deployment can take 20-30s)
@@ -100,9 +210,7 @@ Processing time depends on:
 - Model inference time per frame (~1.5s per frame with Moondream2)
 - Current load on the Modal infrastructure
 - Video complexity
-- Parallel processing (with 30 max GPU workers, processing scales well with more frames)
-
-Keep in mind that the `min_containers=1` parameter in the deployment helps reduce cold starts for subsequent requests by keeping at least one worker warm.
+- Parallel processing (with GPU workers, processing scales well with more frames)
 
 ## Examples
 
@@ -115,8 +223,8 @@ python moondream_client.py --video "https://cdn.pixabay.com/video/2024/05/29/214
 # Process with custom FPS and question
 python moondream_client.py --video "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4" --fps 2 --question "What animals are visible in this scene?"
 
-# Save results to a custom directory
-python moondream_client.py --video "https://example.com/my_video.mp4" --output-dir "my_results"
+# Save results to a custom directory and file
+python moondream_client.py --video "https://example.com/my_video.mp4" --output-dir "my_results" --output-file "custom_results.jsonl"
 ```
 
 ### Batch Processing
@@ -128,7 +236,7 @@ https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_
 https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" > videos_to_process.txt
 
 # Process all videos in batch
-python moondream_client.py --batch videos_to_process.txt --fps 1 --question "What objects are visible in this scene?"
+python moondream_client.py --batch videos_to_process.txt --fps 5 --question "What objects are visible in this scene?"
 ```
 
 ### Analyzing Results
@@ -140,15 +248,18 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Load results
-df = pd.read_json("results/214409_tiny.mp4.jsonl", lines=True)
+df = pd.read_json("results/results.jsonl", lines=True)
+
+# Filter by specific video if needed
+video_df = df[df["video_url"] == "https://example.com/video.mp4"]
 
 # Show basic stats
 print(f"Total frames: {len(df)}")
 print(f"Average processing time: {df['processing_times_ms'].apply(lambda x: x['total_worker_frame_time']).mean():.2f} ms")
 
-# Plot processing times
+# Plot processing times by video
 df['total_time'] = df['processing_times_ms'].apply(lambda x: x['total_worker_frame_time'])
-df.plot(x='timestamp_ms', y='total_time', title='Processing Time by Frame')
+df.groupby('video_url')['total_time'].mean().plot(kind='bar', title='Average Processing Time by Video')
 
 # Extract common words from descriptions
 from collections import Counter
