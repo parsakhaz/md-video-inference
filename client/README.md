@@ -196,7 +196,7 @@ For each job, the client also saves a complete record of the job data in the `re
 
 ## Performance
 
-Based on our tests, here are the actual processing times with warm containers (no cold start):
+Based on our tests, here are the actual processing times (with a10g GPU) with warm containers (no cold start):
 
 | Video                                  | Duration | Frames Processed | Processing Time | FPS Setting |
 |----------------------------------------|----------|------------------|----------------|------------|
