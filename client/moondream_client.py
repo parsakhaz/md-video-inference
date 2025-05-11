@@ -26,6 +26,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskPr
 # Configuration
 API_BASE_URL = "https://parsakhaz--moondream-video-processor-job-api.modal.run"
 DEFAULT_OUTPUT_DIR = "results"
+DEFAULT_OUTPUT_FILE = "results.jsonl"
 POLL_INTERVAL = 5  # seconds
 
 
@@ -65,7 +66,7 @@ def get_job_status(job_id: str) -> Dict:
     return response.json()
 
 
-def save_results_to_jsonl(job_data: Dict, output_file: str) -> None:
+def save_results_to_jsonl(job_data: Dict, output_file: str, video_url: str) -> None:
     """Save job results to a JSONL file, appending if the file exists."""
     # Create directory if it doesn't exist
     os.makedirs(os.path.dirname(os.path.abspath(output_file)), exist_ok=True)
@@ -81,11 +82,13 @@ def save_results_to_jsonl(job_data: Dict, output_file: str) -> None:
         console.print("[bold yellow]Warning:[/bold yellow] No frame results found")
         return
     
-    # Add job_id to each frame result for traceability
+    # Add job_id and video_url to each frame result for traceability
     job_id = job_data.get("job_id")
     for result in frame_results:
         if "job_id" not in result:
             result["job_id"] = job_id
+        if "video_url" not in result:
+            result["video_url"] = video_url
     
     # Write each frame result as a separate JSON line, appending to file if it exists
     with open(output_file, 'a') as f:
@@ -96,7 +99,7 @@ def save_results_to_jsonl(job_data: Dict, output_file: str) -> None:
     full_output_dir = os.path.join(os.path.dirname(output_file), "full_results")
     os.makedirs(full_output_dir, exist_ok=True)
     
-    full_output_file = os.path.join(full_output_dir, f"{os.path.basename(output_file).split('.')[0]}_{job_id}.json")
+    full_output_file = os.path.join(full_output_dir, f"job_{job_id}.json")
     with open(full_output_file, 'w') as f:
         json.dump(job_data, f, indent=2)
     
@@ -104,7 +107,7 @@ def save_results_to_jsonl(job_data: Dict, output_file: str) -> None:
     console.print(f"Saved full job data to [bold green]{full_output_file}[/bold green]")
 
 
-def wait_for_job_completion(job_id: str, output_file: Optional[str] = None) -> Dict:
+def wait_for_job_completion(job_id: str, output_file: Optional[str] = None, video_url: str = None) -> Dict:
     """Poll until the job is completed and save results if output_file is provided."""
     with Progress(
         SpinnerColumn(),
@@ -141,13 +144,13 @@ def wait_for_job_completion(job_id: str, output_file: Optional[str] = None) -> D
             time.sleep(POLL_INTERVAL)
     
     # Save results if output file provided and job completed successfully
-    if output_file and status == "completed":
-        save_results_to_jsonl(job_data, output_file)
+    if output_file and status == "completed" and video_url:
+        save_results_to_jsonl(job_data, output_file, video_url)
     
     return job_data
 
 
-def process_video(video_url: str, fps: int, question: str, output_dir: str) -> None:
+def process_video(video_url: str, fps: int, question: str, output_file: str) -> None:
     """Process a single video: submit, wait for completion, and save results."""
     # Submit the job
     job_result = submit_job(video_url, fps, question)
@@ -156,12 +159,8 @@ def process_video(video_url: str, fps: int, question: str, output_dir: str) -> N
     
     job_id = job_result["job_id"]
     
-    # Create an output filename based just on the video URL (not job-specific)
-    video_name = os.path.basename(video_url.split("?")[0])  # Remove query params if any
-    output_file = os.path.join(output_dir, f"{video_name}.jsonl")
-    
     # Wait for completion and save results
-    final_job_data = wait_for_job_completion(job_id, output_file)
+    final_job_data = wait_for_job_completion(job_id, output_file, video_url)
     
     # Print summary
     if final_job_data:
@@ -178,13 +177,14 @@ def process_video(video_url: str, fps: int, question: str, output_dir: str) -> N
             console.print(f"\n[bold red]Job failed![/bold red] Error: {final_job_data.get('error_message')}")
 
 
-def process_batch(video_urls: List[str], fps: int, question: str, output_dir: str) -> None:
+def process_batch(video_urls: List[str], fps: int, question: str, output_file: str) -> None:
     """Process multiple videos in batch."""
     console.print(f"[bold]Processing {len(video_urls)} videos in batch:[/bold]")
+    console.print(f"All results will be saved to: [bold cyan]{output_file}[/bold cyan]")
     
     for i, video_url in enumerate(video_urls):
         console.print(f"\n[bold]Processing video {i+1}/{len(video_urls)}[/bold]")
-        process_video(video_url, fps, question, output_dir)
+        process_video(video_url, fps, question, output_file)
 
 
 def read_urls_from_file(file_path: str) -> List[str]:
@@ -210,18 +210,23 @@ def main():
     # Output options
     parser.add_argument("--output-dir", type=str, default=DEFAULT_OUTPUT_DIR, 
                        help=f"Directory to save results (default: {DEFAULT_OUTPUT_DIR})")
+    parser.add_argument("--output-file", type=str, default=DEFAULT_OUTPUT_FILE,
+                       help=f"Filename for results (default: {DEFAULT_OUTPUT_FILE})")
     
     args = parser.parse_args()
     
     # Create output directory if it doesn't exist
     os.makedirs(args.output_dir, exist_ok=True)
     
+    # Full path to output file
+    output_file = os.path.join(args.output_dir, args.output_file)
+    
     # Process input based on command-line arguments
     if args.video:
-        process_video(args.video, args.fps, args.question, args.output_dir)
+        process_video(args.video, args.fps, args.question, output_file)
     elif args.batch:
         video_urls = read_urls_from_file(args.batch)
-        process_batch(video_urls, args.fps, args.question, args.output_dir)
+        process_batch(video_urls, args.fps, args.question, output_file)
 
 
 if __name__ == "__main__":
