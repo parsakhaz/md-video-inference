@@ -35,7 +35,7 @@ moondream_image = (
     .pip_install(
         "transformers==4.39.3", "torch==2.1.2", "torchaudio", "torchvision",
         "Pillow==10.0.0", "opencv-python-headless==4.8.0.76", "numpy==1.24.0",
-        "requests==2.28.0", "ffmpeg-python==0.2.0", "accelerate",
+        "requests==2.28.0", "ffmpeg-python==0.2.0", "accelerate", "fastapi",
     )
     .apt_install("ffmpeg")
     .run_function(download_model_assets)
@@ -81,8 +81,19 @@ class FrameExtractor:
         cap = cv2.VideoCapture(video_path)
         if not cap.isOpened(): raise IOError(f"Cannot open video: {video_path}")
         original_fps = cap.get(cv2.CAP_PROP_FPS)
+        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        duration = total_frames / original_fps if original_fps > 0 else 0
+        
+        # Log some stats about the video
+        print(f"Video has {total_frames} frames at {original_fps} fps (duration: {duration:.2f} seconds)")
+        
         if original_fps == 0: original_fps = 30.0
         skip_interval = int(round(original_fps / target_fps)) if target_fps > 0 and original_fps > target_fps else 1
+        
+        # Estimate total frames to be extracted
+        estimated_frames = total_frames // skip_interval
+        print(f"Will extract approximately {estimated_frames} frames (1 every {skip_interval} frames)")
+        
         frames_data = []
         current_frame_idx, extracted_count = 0, 0
         while True:
@@ -97,13 +108,16 @@ class FrameExtractor:
                         'original_fps': original_fps
                     })
                     extracted_count += 1
+                    if extracted_count % 100 == 0:
+                        print(f"Extracted {extracted_count} frames so far...")
             current_frame_idx += 1
         cap.release()
         extraction_time = time.time() - start_time
+        print(f"Extracted {extracted_count} frames in {extraction_time:.2f} seconds")
         return frames_data, original_fps, extraction_time
 
 # --- Moondream Worker Class (Same as before) ---
-@app.cls(gpu="a10g", timeout=180, image=moondream_image, concurrency_limit=3)
+@app.cls(gpu="a10g", timeout=180, image=moondream_image, max_containers=30, min_containers=1)
 class MoondreamWorker:
     @modal.enter()
     def load_model(self):
@@ -175,11 +189,16 @@ def _process_video_pipeline_internal(job_id: str, video_url: str, target_fps: in
     pipeline_output_data = {} # To store the structured results
     try:
         video_path, download_time = downloader.download(video_url)
+        print(f"Downloaded video in {download_time:.2f} seconds: {video_path}")
+        
         extractor = FrameExtractor()
         frames_to_extract, original_fps, extraction_time = extractor.extract_frames(video_path, target_fps)
 
         if not frames_to_extract:
             raise ValueError("No frames extracted from video.")
+
+        num_frames = len(frames_to_extract)
+        print(f"Extracted {num_frames} frames at {target_fps} fps. Preparing for parallel processing...")
 
         tasks_for_workers = [{
             'job_id_for_frame': job_id, # Use the main job_id
@@ -190,9 +209,41 @@ def _process_video_pipeline_internal(job_id: str, video_url: str, target_fps: in
         worker_instance = MoondreamWorker()
         all_frame_results = []
         map_start_time = time.time()
-        for result in worker_instance.describe_frame.map(tasks_for_workers, order_outputs=True):
-            all_frame_results.append(result)
+        
+        # Process in batches to provide progress updates
+        batch_size = 50  # Adjust based on expected frame count
+        num_batches = (num_frames + batch_size - 1) // batch_size
+        
+        for batch_idx in range(num_batches):
+            start_idx = batch_idx * batch_size
+            end_idx = min(start_idx + batch_size, num_frames)
+            batch = tasks_for_workers[start_idx:end_idx]
+            
+            print(f"Processing batch {batch_idx+1}/{num_batches} ({start_idx} to {end_idx-1})...")
+            batch_results = list(worker_instance.describe_frame.map(batch, order_outputs=True))
+            all_frame_results.extend(batch_results)
+            
+            # Update progress in job store
+            progress_job_data = job_store.get(job_id, {})
+            progress_percentage = min(99, int((len(all_frame_results) / num_frames) * 100))
+            progress_job_data.update({
+                "progress": progress_percentage,
+                "frames_processed": len(all_frame_results),
+                "total_frames": num_frames
+            })
+            job_store[job_id] = progress_job_data
+            
+            current_time = time.time()
+            elapsed = current_time - map_start_time
+            frames_per_second = len(all_frame_results) / elapsed if elapsed > 0 else 0
+            estimated_remaining = (num_frames - len(all_frame_results)) / frames_per_second if frames_per_second > 0 else 0
+            
+            print(f"Progress: {progress_percentage}% - {len(all_frame_results)}/{num_frames} frames")
+            print(f"Processing rate: {frames_per_second:.2f} frames/sec")
+            print(f"Estimated remaining time: {estimated_remaining:.2f} seconds")
+        
         map_duration = time.time() - map_start_time
+        print(f"All frames processed in {map_duration:.2f} seconds")
         
         overall_duration = time.time() - overall_start_time
         pipeline_output_data = {
@@ -242,169 +293,131 @@ def _process_video_pipeline_internal(job_id: str, video_url: str, target_fps: in
 # --- Public Functions for Job Submission and Status ---
 
 # Exposed as web endpoint for job submission
-@app.function()
-def submit_video_job(video_url: str, target_fps: int = 1, question_per_frame: str = "Describe this scene."):
-    job_id = f"job_{uuid.uuid4()}"
-    initial_job_data = {
-        "job_id": job_id,
-        "video_url": video_url,
-        "input_target_fps": target_fps,
-        "input_question": question_per_frame,
-        "status": "submitted",
-        "submitted_at": time.time(),
-        "results_payload": None, # Placeholder for results
-        "error_message": None,
-        "traceback": None,
-        "processing_started_at": None,
-        "completed_at": None,
-        "failed_at": None,
-    }
-    job_store[job_id] = initial_job_data
-    print(f"Job {job_id} submitted for URL: {video_url}. Stored initial data.")
-
-    # Asynchronously spawn the internal processing pipeline
-    _process_video_pipeline_internal.spawn(job_id, video_url, target_fps, question_per_frame)
-    print(f"Job {job_id} processing spawned.")
-
-    return {"job_id": job_id, "status": "submitted", "message": "Job submitted for processing."}
-
-# Exposed as web endpoint for job status checking
-@app.function()
-def get_job_status(job_id: str):
-    job_data = job_store.get(job_id)
-    if job_data is None:
-        return {"job_id": job_id, "status": "not_found", "error_message": "Job ID not found in store."}
+@app.function(min_containers=1)
+@modal.asgi_app()
+def api():
+    from fastapi import FastAPI, HTTPException, Query, Path
     
-    # Return a summary for ongoing/failed jobs, or full if completed
-    summary_data = {
-        key: value for key, value in job_data.items()
-        if key != "results_payload" or job_data.get("status") == "completed"
-    }
-    if job_data.get("status") != "completed" and "results_payload" in job_data:
-        summary_data["results_preview"] = "Results available upon completion."
-
-    return summary_data
-
-# --- Web API Endpoints ---
-
-@app.web_endpoint(method="POST", path="/api/submit")
-def web_submit_job(video_url: str, target_fps: int = 1, question: str = "Describe this scene."):
-    """
-    Web endpoint for submitting video processing jobs.
+    web_app = FastAPI(title="Moondream Video Processing API")
     
-    Args:
-        video_url: URL of the video to process
-        target_fps: Target frame rate for extraction (default=1)
-        question: Question to ask about each frame (default="Describe this scene.")
-        
-    Returns:
-        JSON with job_id and submission status
-    """
-    try:
-        # Validate inputs
-        if not video_url or not video_url.startswith(("http://", "https://")):
-            return {"error": "Invalid video URL. Must be a valid HTTP/HTTPS URL."}, 400
-        
-        if target_fps <= 0 or target_fps > 30:
-            return {"error": "Invalid target_fps. Must be between 1 and 30."}, 400
+    @web_app.post("/api/submit")
+    async def submit_job(video_url: str, target_fps: int = 1, question: str = "Describe this scene."):
+        try:
+            # Validate inputs
+            if not video_url or not video_url.startswith(("http://", "https://")):
+                raise HTTPException(status_code=400, detail="Invalid video URL. Must be a valid HTTP/HTTPS URL.")
             
-        # Submit the job
-        result = submit_video_job.remote(video_url, target_fps, question)
-        return result, 200
-    except Exception as e:
-        return {"error": f"Failed to submit job: {str(e)}"}, 500
-
-@app.web_endpoint(method="GET", path="/api/status/{job_id}")
-def web_get_job_status(job_id: str):
-    """
-    Web endpoint for checking the status of a video processing job.
-    
-    Args:
-        job_id: The ID of the job to check
-        
-    Returns:
-        JSON with job status information
-    """
-    try:
-        if not job_id or not job_id.startswith("job_"):
-            return {"error": "Invalid job ID format."}, 400
-            
-        result = get_job_status.remote(job_id)
-        if result.get("status") == "not_found":
-            return result, 404
-        return result, 200
-    except Exception as e:
-        return {"error": f"Failed to retrieve job status: {str(e)}"}, 500
-
-@app.web_endpoint(method="GET", path="/api/jobs/list")
-def web_list_jobs(limit: int = 10, status_filter: str = None):
-    """
-    Web endpoint for listing recent jobs.
-    
-    Args:
-        limit: Maximum number of jobs to return (default=10)
-        status_filter: Filter by status (e.g., "completed", "failed", "processing", "submitted")
-        
-    Returns:
-        JSON with list of jobs
-    """
-    try:
-        if limit <= 0 or limit > 100:
-            return {"error": "Invalid limit. Must be between 1 and 100."}, 400
-            
-        # Get all job IDs from the job store
-        job_ids = list(job_store.keys())
-        
-        # Sort jobs by submission time (newest first)
-        jobs_with_data = []
-        for job_id in job_ids:
-            job_data = job_store.get(job_id)
-            if not job_data:
-                continue
+            if target_fps <= 0 or target_fps > 30:
+                raise HTTPException(status_code=400, detail="Invalid target_fps. Must be between 1 and 30.")
                 
-            # Filter by status if specified
-            if status_filter and job_data.get("status") != status_filter:
-                continue
-                
-            # Create a summary without the full results payload
-            job_summary = {
-                "job_id": job_data.get("job_id"),
-                "video_url": job_data.get("video_url"),
-                "status": job_data.get("status"),
-                "submitted_at": job_data.get("submitted_at"),
-                "completed_at": job_data.get("completed_at"),
-                "failed_at": job_data.get("failed_at"),
+            # Submit the job directly
+            job_id = f"job_{uuid.uuid4()}"
+            initial_job_data = {
+                "job_id": job_id,
+                "video_url": video_url,
+                "input_target_fps": target_fps,
+                "input_question": question,
+                "status": "submitted",
+                "submitted_at": time.time(),
+                "results_payload": None,
+                "error_message": None,
+                "traceback": None,
+                "processing_started_at": None,
+                "completed_at": None,
+                "failed_at": None,
             }
-            jobs_with_data.append(job_summary)
+            job_store[job_id] = initial_job_data
             
-        # Sort by submission time (newest first)
-        jobs_with_data.sort(key=lambda x: x.get("submitted_at", 0), reverse=True)
-        
-        # Limit the results
-        jobs_with_data = jobs_with_data[:limit]
+            # Spawn the internal processing pipeline
+            _process_video_pipeline_internal.spawn(job_id, video_url, target_fps, question)
             
-        return {"jobs": jobs_with_data, "total_count": len(jobs_with_data)}, 200
-    except Exception as e:
-        return {"error": f"Failed to list jobs: {str(e)}"}, 500
-
-@app.web_endpoint(method="GET", path="/")
-def web_homepage():
-    """Homepage with basic API documentation"""
-    return {
-        "name": "Moondream Video Processing API",
-        "description": "API for processing videos with Moondream2 vision-language model",
-        "version": "1.0.0",
-        "endpoints": [
-            {"path": "/api/submit", "method": "POST", "description": "Submit a new video processing job"},
-            {"path": "/api/status/{job_id}", "method": "GET", "description": "Check status of a specific job"},
-            {"path": "/api/jobs/list", "method": "GET", "description": "List recent jobs"},
-            {"path": "/", "method": "GET", "description": "This documentation page"}
-        ],
-        "model_info": {
-            "model_id": MODEL_ID,
-            "revision": REVISION
+            return {"job_id": job_id, "status": "submitted", "message": "Job submitted for processing."}
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to submit job: {str(e)}")
+    
+    @web_app.get("/api/status/{job_id}")
+    async def get_job_status(job_id: str):
+        try:
+            if not job_id or not job_id.startswith("job_"):
+                raise HTTPException(status_code=400, detail="Invalid job ID format.")
+                
+            # Get status directly from job store
+            job_data = job_store.get(job_id)
+            if job_data is None:
+                raise HTTPException(status_code=404, detail="Job ID not found in store.")
+            
+            # Return a summary for ongoing/failed jobs, or full if completed
+            summary_data = {
+                key: value for key, value in job_data.items()
+                if key != "results_payload" or job_data.get("status") == "completed"
+            }
+            if job_data.get("status") != "completed" and "results_payload" in job_data:
+                summary_data["results_preview"] = "Results available upon completion."
+                
+            return summary_data
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to retrieve job status: {str(e)}")
+    
+    @web_app.get("/api/jobs/list")
+    async def list_jobs(limit: int = Query(default=10, ge=1, le=100), 
+                         status_filter: str = Query(default=None)):
+        try:
+            # Get all job IDs from the job store
+            job_ids = list(job_store.keys())
+            
+            # Sort jobs by submission time (newest first)
+            jobs_with_data = []
+            for job_id in job_ids:
+                job_data = job_store.get(job_id)
+                if not job_data:
+                    continue
+                    
+                # Filter by status if specified
+                if status_filter and job_data.get("status") != status_filter:
+                    continue
+                    
+                # Create a summary without the full results payload
+                job_summary = {
+                    "job_id": job_data.get("job_id"),
+                    "video_url": job_data.get("video_url"),
+                    "status": job_data.get("status"),
+                    "submitted_at": job_data.get("submitted_at"),
+                    "completed_at": job_data.get("completed_at"),
+                    "failed_at": job_data.get("failed_at"),
+                }
+                jobs_with_data.append(job_summary)
+                
+            # Sort by submission time (newest first)
+            jobs_with_data.sort(key=lambda x: x.get("submitted_at", 0), reverse=True)
+            
+            # Limit the results
+            jobs_with_data = jobs_with_data[:limit]
+                
+            return {"jobs": jobs_with_data, "total_count": len(jobs_with_data)}
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to list jobs: {str(e)}")
+    
+    @web_app.get("/")
+    async def homepage():
+        return {
+            "name": "Moondream Video Processing API",
+            "description": "API for processing videos with Moondream2 vision-language model",
+            "version": "1.0.0",
+            "endpoints": [
+                {"path": "/api/submit", "method": "POST", "description": "Submit a new video processing job"},
+                {"path": "/api/status/{job_id}", "method": "GET", "description": "Check status of a specific job"},
+                {"path": "/api/jobs/list", "method": "GET", "description": "List recent jobs"},
+                {"path": "/", "method": "GET", "description": "This documentation page"}
+            ],
+            "model_info": {
+                "model_id": MODEL_ID,
+                "revision": REVISION
+            }
         }
-    }
+    
+    return web_app
 
 
 @app.local_entrypoint()
@@ -420,38 +433,55 @@ def main(
     print(f"Full job data will be saved to: {output_json_file} upon completion.")
     print("----------------------------------------------------")
 
-    # 1. Submit the job
-    # For local_entrypoint, .remote() is how you call other Modal functions.
-    submission_response = submit_video_job.remote(video_url, target_fps, question)
-    
-    if not submission_response or "job_id" not in submission_response:
-        print("Error: Failed to submit job or no job_id received. Exiting.")
-        return
-    
-    job_id = submission_response["job_id"]
+    # 1. Submit the job directly
+    job_id = f"job_{uuid.uuid4()}"
+    initial_job_data = {
+        "job_id": job_id,
+        "video_url": video_url,
+        "input_target_fps": target_fps,
+        "input_question": question,
+        "status": "submitted",
+        "submitted_at": time.time(),
+        "results_payload": None, # Placeholder for results
+        "error_message": None,
+        "traceback": None,
+        "processing_started_at": None,
+        "completed_at": None,
+        "failed_at": None,
+    }
+    job_store[job_id] = initial_job_data
     print(f"Job submitted successfully! Job ID: {job_id}")
 
+    # Spawn the processing pipeline
+    _process_video_pipeline_internal.spawn(job_id, video_url, target_fps, question)
+    
     # 2. Poll for status
     print(f"\nPolling for job status (Job ID: {job_id})... Press Ctrl+C to stop early.")
     final_job_data = None
     try:
         while True:
             time.sleep(10) # Poll every 10 seconds
-            status_response = get_job_status.remote(job_id)
+            job_data = job_store.get(job_id)
             
-            if not status_response:
+            if not job_data:
                 print(f"  [{time.strftime('%H:%M:%S')}] Error: No status response for job {job_id}.")
                 continue
 
-            current_status = status_response.get("status", "unknown")
-            print(f"  [{time.strftime('%H:%M:%S')}] Job {job_id} status: {current_status}")
+            current_status = job_data.get("status", "unknown")
+            progress = job_data.get("progress", 0)
+            if progress > 0 and progress < 100 and current_status == "processing":
+                frames_processed = job_data.get("frames_processed", 0)
+                total_frames = job_data.get("total_frames", 0)
+                print(f"  [{time.strftime('%H:%M:%S')}] Job {job_id} status: {current_status} ({progress}% - {frames_processed}/{total_frames} frames)")
+            else:
+                print(f"  [{time.strftime('%H:%M:%S')}] Job {job_id} status: {current_status}")
 
             if current_status in ["completed", "failed", "not_found"]:
-                final_job_data = status_response
+                final_job_data = job_data
                 break
     except KeyboardInterrupt:
         print("\nPolling interrupted by user. Fetching final status...")
-        final_job_data = get_job_status.remote(job_id) # Get one last status
+        final_job_data = job_store.get(job_id) # Get one last status
     
     # 3. Process and save final results
     if final_job_data:

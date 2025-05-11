@@ -10,6 +10,8 @@ A Modal-based API for asynchronous video processing and analysis using the Moond
 - Configurable frame extraction rate
 - Customizable questions for the vision-language model
 - GPU-accelerated inference using Modal cloud infrastructure
+- High parallelism with up to 30 concurrent GPU workers
+- Real-time job progress tracking
 
 ## Prerequisites
 
@@ -180,7 +182,8 @@ modal run moondream_video_processor.py \
 3. **Processing**: System asynchronously:
    - Downloads the video
    - Extracts frames at the specified FPS
-   - Distributes frame analysis across GPU workers
+   - Distributes frame analysis across GPU workers in batches
+   - Tracks and reports job progress
    - Collects and aggregates results
 4. **Completion**: Job is marked as "completed" with full results or "failed" with error details
 5. **Results Retrieval**: Client fetches job status and results using the job ID
@@ -193,42 +196,43 @@ To use a different model, update the `MODEL_ID` and `REVISION` constants at the 
 
 ### Adjust GPU Resources
 
-The application uses A10G GPUs by default. You can modify the GPU type and concurrency limits in the `@app.cls` decorator of the `MoondreamWorker` class.
-
-### Determining Optimal Concurrency Limit
-
-To maximize the efficiency of your GPU resources, you should determine the optimal concurrency limit for your specific GPU model. You can use the following benchmark script to find this sweet spot.
-
-Run: benchmark_gpu_concurrency.py to benchmark. The classes are to allow the benchmark script to run. They are not used for modal.
-
-#### Running the Benchmark
-
-1. SSH into a GPU instance (e.g., using services like RunPod or AWS EC2 with GPU)
-2. Install the necessary dependencies:
-   ```bash
-   pip install torch transformers pillow opencv-python numpy
-   ```
-3. Run the benchmark script:
-   ```bash
-   python benchmark_gpu_concurrency.py --max_models 20 --fps 2
-   ```
-
-The script will test different concurrency levels and output the optimal number based on total throughput and latency. Once you have determined the best value, update the `concurrency_limit` parameter in the `MoondreamWorker` class:
+The application uses A10G GPUs by default. You can modify the GPU type and parallelism settings in the `@app.cls` decorator of the `MoondreamWorker` class.
 
 ```python
-@app.cls(gpu="a10g", timeout=180, image=moondream_image, concurrency_limit=YOUR_OPTIMAL_VALUE)
+@app.cls(gpu="a10g", timeout=180, image=moondream_image, max_containers=30, min_containers=1)
 class MoondreamWorker:
     # ... rest of the class
 ```
 
+The `max_containers` parameter controls how many parallel GPU workers can be used, while `min_containers` keeps a minimum number of workers warm to reduce cold start times.
+
+### Determining Optimal Concurrency Limit
+
+The system has two levels of concurrency to understand:
+
+1. **Per-GPU Model Concurrency**: How many inference requests a single GPU worker can handle simultaneously. This is set by the `concurrency_limit` parameter in the `@modal.concurrent` decorator (not currently used in our implementation).
+
+2. **Total Worker Parallelism**: How many separate GPU workers can be created to process frames in parallel. This is controlled by the `max_containers` parameter.
+
+The benchmark script is designed to determine the optimal number of concurrent model instances per GPU worker (the first type), not the total number of workers. Our implementation currently uses a simpler approach where each worker processes one request at a time, but we scale out to many workers.
+
+```python
+# Current implementation scales horizontally with many workers
+@app.cls(gpu="a10g", timeout=180, image=moondream_image, max_containers=30, min_containers=1)
+class MoondreamWorker:
+    # ... rest of the class
+```
+
+If you want to optimize further, you could implement model batching within each GPU worker using the benchmark script to determine the optimal batch size per GPU.
+
 #### Expected Results
 
-Different GPU models will have different optimal concurrency values:
-- NVIDIA A10G: Typically 10-15 concurrent models
-- NVIDIA A100: Can handle 20-30 concurrent models
-- NVIDIA T4: Usually 5-10 concurrent models
+Different GPU models will have different optimal values:
+- NVIDIA A10G: Typically can handle 3-5 concurrent model instances per GPU
+- NVIDIA A100: Can handle 5-10 concurrent model instances per GPU
+- NVIDIA T4: Usually 2-3 concurrent model instances per GPU
 
-The optimal value balances memory usage and computational efficiency. Setting too high a value may cause out-of-memory errors, while too low a value underutilizes the GPU.
+The current implementation foregoes batching within workers and instead focuses on horizontal scaling with many workers processing frames in parallel.
 
 ### Extend the API
 
