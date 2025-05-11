@@ -1,0 +1,226 @@
+{
+  "job_id": "job_8d183c8e-d6c1-431e-bcdb-e5946c76e282",
+  "video_url": "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+  "input_target_fps": 1,
+  "input_question": "What objects are visible in this scene?",
+  "status": "completed",
+  "submitted_at": 1746942509.552636,
+  "results_payload": {
+    "video_url": "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+    "target_fps_setting": 1,
+    "actual_original_fps": 23.976023976023978,
+    "total_frames_submitted_to_workers": 15,
+    "total_frames_results_received": 15,
+    "timings_seconds": {
+      "video_download": 0.09,
+      "frame_extraction": 0.44,
+      "distributed_frame_processing_map": 1.99,
+      "overall_pipeline_internal": 2.54
+    },
+    "frame_results": [
+      {
+        "job_id_for_frame": "job_8d183c8e-d6c1-431e-bcdb-e5946c76e282",
+        "frame_idx": 0,
+        "timestamp_ms": 0,
+        "description": "In this scene, a tablet computer and a cup of coffee are visible on a wooden table.",
+        "processing_times_ms": {
+          "image_encode": 118.94,
+          "llm_inference": 1082.13,
+          "total_worker_frame_time": 1210.52
+        },
+        "status": "success",
+        "job_id": "job_8d183c8e-d6c1-431e-bcdb-e5946c76e282"
+      },
+      {
+        "job_id_for_frame": "job_8d183c8e-d6c1-431e-bcdb-e5946c76e282",
+        "frame_idx": 24,
+        "timestamp_ms": 1000,
+        "description": "In this scene, a tablet computer and a cup of coffee are visible on a wooden table.",
+        "processing_times_ms": {
+          "image_encode": 28.35,
+          "llm_inference": 386.45,
+          "total_worker_frame_time": 418.85
+        },
+        "status": "success",
+        "job_id": "job_8d183c8e-d6c1-431e-bcdb-e5946c76e282"
+      },
+      {
+        "job_id_for_frame": "job_8d183c8e-d6c1-431e-bcdb-e5946c76e282",
+        "frame_idx": 48,
+        "timestamp_ms": 2001,
+        "description": "In this scene, a person's hand is visible, holding a tablet or smartphone, and a cup of coffee is placed nearby.",
+        "processing_times_ms": {
+          "image_encode": 113.66,
+          "llm_inference": 1156.63,
+          "total_worker_frame_time": 1278.41
+        },
+        "status": "success",
+        "job_id": "job_8d183c8e-d6c1-431e-bcdb-e5946c76e282"
+      },
+      {
+        "job_id_for_frame": "job_8d183c8e-d6c1-431e-bcdb-e5946c76e282",
+        "frame_idx": 72,
+        "timestamp_ms": 3002,
+        "description": "In this scene, a cell phone and a cup of coffee are visible on a wooden table.",
+        "processing_times_ms": {
+          "image_encode": 115.5,
+          "llm_inference": 1071.43,
+          "total_worker_frame_time": 1195.47
+        },
+        "status": "success",
+        "job_id": "job_8d183c8e-d6c1-431e-bcdb-e5946c76e282"
+      },
+      {
+        "job_id_for_frame": "job_8d183c8e-d6c1-431e-bcdb-e5946c76e282",
+        "frame_idx": 96,
+        "timestamp_ms": 4003,
+        "description": "In this scene, a television screen is visible, displaying a close-up of a bright orange flame or fire.",
+        "processing_times_ms": {
+          "image_encode": 28.84,
+          "llm_inference": 455.46,
+          "total_worker_frame_time": 488.89
+        },
+        "status": "success",
+        "job_id": "job_8d183c8e-d6c1-431e-bcdb-e5946c76e282"
+      },
+      {
+        "job_id_for_frame": "job_8d183c8e-d6c1-431e-bcdb-e5946c76e282",
+        "frame_idx": 120,
+        "timestamp_ms": 5005,
+        "description": "In this scene, a television screen is visible, displaying a fire burning in front of a building.",
+        "processing_times_ms": {
+          "image_encode": 120.04,
+          "llm_inference": 1127.67,
+          "total_worker_frame_time": 1257.32
+        },
+        "status": "success",
+        "job_id": "job_8d183c8e-d6c1-431e-bcdb-e5946c76e282"
+      },
+      {
+        "job_id_for_frame": "job_8d183c8e-d6c1-431e-bcdb-e5946c76e282",
+        "frame_idx": 144,
+        "timestamp_ms": 6005,
+        "description": "In this scene, there is a television screen displaying a fire, a castle, and a group of people.",
+        "processing_times_ms": {
+          "image_encode": 122.89,
+          "llm_inference": 1135.71,
+          "total_worker_frame_time": 1267.58
+        },
+        "status": "success",
+        "job_id": "job_8d183c8e-d6c1-431e-bcdb-e5946c76e282"
+      },
+      {
+        "job_id_for_frame": "job_8d183c8e-d6c1-431e-bcdb-e5946c76e282",
+        "frame_idx": 168,
+        "timestamp_ms": 7007,
+        "description": "In this scene, a television screen is visible, displaying a close-up of a blonde woman.",
+        "processing_times_ms": {
+          "image_encode": 117.57,
+          "llm_inference": 1109.76,
+          "total_worker_frame_time": 1235.97
+        },
+        "status": "success",
+        "job_id": "job_8d183c8e-d6c1-431e-bcdb-e5946c76e282"
+      },
+      {
+        "job_id_for_frame": "job_8d183c8e-d6c1-431e-bcdb-e5946c76e282",
+        "frame_idx": 192,
+        "timestamp_ms": 8007,
+        "description": "In this scene, a television screen is visible, displaying a close-up of a woman with blonde hair.",
+        "processing_times_ms": {
+          "image_encode": 28.06,
+          "llm_inference": 430.45,
+          "total_worker_frame_time": 462.44
+        },
+        "status": "success",
+        "job_id": "job_8d183c8e-d6c1-431e-bcdb-e5946c76e282"
+      },
+      {
+        "job_id_for_frame": "job_8d183c8e-d6c1-431e-bcdb-e5946c76e282",
+        "frame_idx": 216,
+        "timestamp_ms": 9008,
+        "description": "In this scene, a computer monitor and a power cord are visible.",
+        "processing_times_ms": {
+          "image_encode": 27.97,
+          "llm_inference": 306.8,
+          "total_worker_frame_time": 337.62
+        },
+        "status": "success",
+        "job_id": "job_8d183c8e-d6c1-431e-bcdb-e5946c76e282"
+      },
+      {
+        "job_id_for_frame": "job_8d183c8e-d6c1-431e-bcdb-e5946c76e282",
+        "frame_idx": 240,
+        "timestamp_ms": 10010,
+        "description": "In this scene, the objects visible are the HBO logo and the text \"right on your TV.\"",
+        "processing_times_ms": {
+          "image_encode": 27.71,
+          "llm_inference": 409.12,
+          "total_worker_frame_time": 439.42
+        },
+        "status": "success",
+        "job_id": "job_8d183c8e-d6c1-431e-bcdb-e5946c76e282"
+      },
+      {
+        "job_id_for_frame": "job_8d183c8e-d6c1-431e-bcdb-e5946c76e282",
+        "frame_idx": 264,
+        "timestamp_ms": 11011,
+        "description": "In this scene, there are no visible objects. The focus is on the text that reads \"Everything you love, now on your TV.\"",
+        "processing_times_ms": {
+          "image_encode": 27.51,
+          "llm_inference": 521.75,
+          "total_worker_frame_time": 552.24
+        },
+        "status": "success",
+        "job_id": "job_8d183c8e-d6c1-431e-bcdb-e5946c76e282"
+      },
+      {
+        "job_id_for_frame": "job_8d183c8e-d6c1-431e-bcdb-e5946c76e282",
+        "frame_idx": 288,
+        "timestamp_ms": 12011,
+        "description": "In this scene, there are no visible objects. The focus is on the text that reads \"For $35. For everyone.\"",
+        "processing_times_ms": {
+          "image_encode": 28.38,
+          "llm_inference": 507.86,
+          "total_worker_frame_time": 539.05
+        },
+        "status": "success",
+        "job_id": "job_8d183c8e-d6c1-431e-bcdb-e5946c76e282"
+      },
+      {
+        "job_id_for_frame": "job_8d183c8e-d6c1-431e-bcdb-e5946c76e282",
+        "frame_idx": 312,
+        "timestamp_ms": 13013,
+        "description": "In this scene, the ChromeCast logo is visible.",
+        "processing_times_ms": {
+          "image_encode": 28.61,
+          "llm_inference": 259.91,
+          "total_worker_frame_time": 291.25
+        },
+        "status": "success",
+        "job_id": "job_8d183c8e-d6c1-431e-bcdb-e5946c76e282"
+      },
+      {
+        "job_id_for_frame": "job_8d183c8e-d6c1-431e-bcdb-e5946c76e282",
+        "frame_idx": 336,
+        "timestamp_ms": 14014,
+        "description": "In this scene, the word \"Google\" is visible, which is the main focus of the image.",
+        "processing_times_ms": {
+          "image_encode": 28.16,
+          "llm_inference": 429.26,
+          "total_worker_frame_time": 460.12
+        },
+        "status": "success",
+        "job_id": "job_8d183c8e-d6c1-431e-bcdb-e5946c76e282"
+      }
+    ]
+  },
+  "error_message": null,
+  "traceback": null,
+  "processing_started_at": 1746942509.7122352,
+  "completed_at": 1746942512.2513537,
+  "failed_at": null,
+  "progress": 99,
+  "frames_processed": 15,
+  "total_frames": 15
+}

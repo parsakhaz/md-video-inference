@@ -12,6 +12,7 @@ A Modal-based API for asynchronous video processing and analysis using the Moond
 - GPU-accelerated inference using Modal cloud infrastructure
 - High parallelism with up to 30 concurrent GPU workers
 - Real-time job progress tracking
+- Python client for easy batch processing (see `/client` directory)
 
 ## Prerequisites
 
@@ -159,6 +160,86 @@ Example Response:
 }
 ```
 
+## Results Storage and Analysis
+
+### Storing Results in JSONL Format
+
+The API provides detailed frame-by-frame results that can be stored for further analysis. To save the results in a JSONL (JSON Lines) format, which is convenient for processing large datasets, you can use the following script:
+
+```bash
+#!/bin/bash
+# Usage: ./save_results.sh JOB_ID output_file.jsonl
+
+JOB_ID=$1
+OUTPUT_FILE=$2
+
+# Check if output file exists and create it if not
+touch "$OUTPUT_FILE"
+
+# Get the full job status response
+RESPONSE=$(curl -s "https://YOUR_WORKSPACE--moondream-video-processor-job-api.modal.run/api/status/$JOB_ID")
+
+# Extract frame results from the response and save each as a separate line in JSONL
+echo "$RESPONSE" | jq -c '.results_payload.frame_results[]' >> "$OUTPUT_FILE"
+
+echo "Saved $(jq -s 'length' "$OUTPUT_FILE") frame results to $OUTPUT_FILE"
+```
+
+Replace `YOUR_WORKSPACE` with your Modal workspace name.
+
+You can also use Python to retrieve and analyze the results:
+
+```python
+import requests
+import json
+import pandas as pd
+
+def save_job_results_to_jsonl(job_id, output_file):
+    """Save job results to JSONL file for easy analysis."""
+    api_url = f"https://YOUR_WORKSPACE--moondream-video-processor-job-api.modal.run/api/status/{job_id}"
+    
+    response = requests.get(api_url)
+    if response.status_code != 200:
+        raise Exception(f"Failed to get job status: {response.text}")
+    
+    job_data = response.json()
+    
+    if job_data["status"] != "completed":
+        raise Exception(f"Job not completed yet. Current status: {job_data['status']}")
+    
+    # Extract frame results
+    frame_results = job_data["results_payload"]["frame_results"]
+    
+    # Write each frame result as a separate JSON line
+    with open(output_file, 'w') as f:
+        for result in frame_results:
+            f.write(json.dumps(result) + '\n')
+    
+    print(f"Saved {len(frame_results)} frame results to {output_file}")
+    return frame_results
+
+# Example usage
+job_id = "job_e8cfe37b-ceb5-40e1-9338-1b0426d262e8"
+save_job_results_to_jsonl(job_id, "video_analysis_results.jsonl")
+
+# To analyze the results with pandas
+def analyze_results(jsonl_file):
+    """Load JSONL results into pandas for analysis."""
+    df = pd.read_json(jsonl_file, lines=True)
+    
+    # Example analysis
+    print(f"Total frames: {len(df)}")
+    print(f"Average processing time: {df['processing_times_ms'].apply(lambda x: x['total_worker_frame_time']).mean():.2f} ms")
+    
+    # Extract just the descriptions
+    descriptions = df[['timestamp_ms', 'description']]
+    return df, descriptions
+
+df, descriptions = analyze_results("video_analysis_results.jsonl")
+```
+
+This approach makes it easy to store and process the frame-by-frame analysis results, enabling further analysis with tools like pandas, visualization libraries, or text analysis frameworks.
+
 ## Running Locally
 
 To run the system locally for testing:
@@ -261,4 +342,15 @@ This project uses the Moondream2 model which has its own license terms. Please c
 ## Acknowledgments
 
 - [Moondream2](https://huggingface.co/vikhyatk/moondream2) for the vision-language model
-- [Modal](https://modal.com/) for the serverless compute platform 
+- [Modal](https://modal.com/) for the serverless compute platform
+
+## Client
+
+A Python client is included in the `/client` directory to make it easy to interact with the API. The client supports:
+
+- Processing single videos or batches of videos
+- Automatically polling for job completion
+- Saving results in JSONL format for further analysis
+- Real-time progress reporting
+
+See the `/client/README.md` for detailed usage instructions and examples. 

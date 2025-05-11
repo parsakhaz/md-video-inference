@@ -1,0 +1,161 @@
+{
+  "job_id": "job_1c4e82c1-47fd-4f20-8f68-95b8f99f11db",
+  "video_url": "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4",
+  "input_target_fps": 1,
+  "input_question": "What objects are visible in this scene?",
+  "status": "completed",
+  "submitted_at": 1746942497.4326444,
+  "results_payload": {
+    "video_url": "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4",
+    "target_fps_setting": 1,
+    "actual_original_fps": 30.0,
+    "total_frames_submitted_to_workers": 10,
+    "total_frames_results_received": 10,
+    "timings_seconds": {
+      "video_download": 0.08,
+      "frame_extraction": 0.16,
+      "distributed_frame_processing_map": 6.99,
+      "overall_pipeline_internal": 7.26
+    },
+    "frame_results": [
+      {
+        "job_id_for_frame": "job_1c4e82c1-47fd-4f20-8f68-95b8f99f11db",
+        "frame_idx": 0,
+        "timestamp_ms": 0,
+        "description": "In this scene, there is a tree with a large root system, a cave-like structure made of grass and rocks, and a grassy hill.",
+        "processing_times_ms": {
+          "image_encode": 22.41,
+          "llm_inference": 602.12,
+          "total_worker_frame_time": 626.43
+        },
+        "status": "success",
+        "job_id": "job_1c4e82c1-47fd-4f20-8f68-95b8f99f11db"
+      },
+      {
+        "job_id_for_frame": "job_1c4e82c1-47fd-4f20-8f68-95b8f99f11db",
+        "frame_idx": 30,
+        "timestamp_ms": 1000,
+        "description": "In this scene, there is a tree with a large root system, a cave or hollow in the ground, and a grassy hill.",
+        "processing_times_ms": {
+          "image_encode": 22.19,
+          "llm_inference": 548.55,
+          "total_worker_frame_time": 572.65
+        },
+        "status": "success",
+        "job_id": "job_1c4e82c1-47fd-4f20-8f68-95b8f99f11db"
+      },
+      {
+        "job_id_for_frame": "job_1c4e82c1-47fd-4f20-8f68-95b8f99f11db",
+        "frame_idx": 60,
+        "timestamp_ms": 2000,
+        "description": "In this scene, there is a tree with a large root system, a cave or hollow in the ground, and a grassy hill or field.",
+        "processing_times_ms": {
+          "image_encode": 22.6,
+          "llm_inference": 561.79,
+          "total_worker_frame_time": 586.21
+        },
+        "status": "success",
+        "job_id": "job_1c4e82c1-47fd-4f20-8f68-95b8f99f11db"
+      },
+      {
+        "job_id_for_frame": "job_1c4e82c1-47fd-4f20-8f68-95b8f99f11db",
+        "frame_idx": 90,
+        "timestamp_ms": 3000,
+        "description": "In this scene, there is a tree with a large root system, a cave or hollow in the ground, and a grassy hill.",
+        "processing_times_ms": {
+          "image_encode": 22.48,
+          "llm_inference": 532.41,
+          "total_worker_frame_time": 556.76
+        },
+        "status": "success",
+        "job_id": "job_1c4e82c1-47fd-4f20-8f68-95b8f99f11db"
+      },
+      {
+        "job_id_for_frame": "job_1c4e82c1-47fd-4f20-8f68-95b8f99f11db",
+        "frame_idx": 120,
+        "timestamp_ms": 4000,
+        "description": "In this scene, there is a tree with a hollow trunk, a cave-like structure, and a grassy hill.",
+        "processing_times_ms": {
+          "image_encode": 21.99,
+          "llm_inference": 480.57,
+          "total_worker_frame_time": 504.24
+        },
+        "status": "success",
+        "job_id": "job_1c4e82c1-47fd-4f20-8f68-95b8f99f11db"
+      },
+      {
+        "job_id_for_frame": "job_1c4e82c1-47fd-4f20-8f68-95b8f99f11db",
+        "frame_idx": 150,
+        "timestamp_ms": 5000,
+        "description": "In this scene, there is a tree with a hollow trunk, a cave-like structure made of grass, and a pile of rocks.",
+        "processing_times_ms": {
+          "image_encode": 22.09,
+          "llm_inference": 526.3,
+          "total_worker_frame_time": 550.07
+        },
+        "status": "success",
+        "job_id": "job_1c4e82c1-47fd-4f20-8f68-95b8f99f11db"
+      },
+      {
+        "job_id_for_frame": "job_1c4e82c1-47fd-4f20-8f68-95b8f99f11db",
+        "frame_idx": 180,
+        "timestamp_ms": 6000,
+        "description": "In this scene, there is a tree with a large root system, a cave-like structure made of grass and rocks, and a small hill or mound of grass.",
+        "processing_times_ms": {
+          "image_encode": 22.39,
+          "llm_inference": 623.64,
+          "total_worker_frame_time": 647.75
+        },
+        "status": "success",
+        "job_id": "job_1c4e82c1-47fd-4f20-8f68-95b8f99f11db"
+      },
+      {
+        "job_id_for_frame": "job_1c4e82c1-47fd-4f20-8f68-95b8f99f11db",
+        "frame_idx": 210,
+        "timestamp_ms": 7000,
+        "description": "In this scene, there is a tree with a large root system, a cave or hollow in the ground, and a grassy hill or mound.",
+        "processing_times_ms": {
+          "image_encode": 21.81,
+          "llm_inference": 556.6,
+          "total_worker_frame_time": 580.09
+        },
+        "status": "success",
+        "job_id": "job_1c4e82c1-47fd-4f20-8f68-95b8f99f11db"
+      },
+      {
+        "job_id_for_frame": "job_1c4e82c1-47fd-4f20-8f68-95b8f99f11db",
+        "frame_idx": 240,
+        "timestamp_ms": 8000,
+        "description": "In this scene, there is a tree with a hollow trunk, a cave-like structure made of grass, and a pile of rocks.",
+        "processing_times_ms": {
+          "image_encode": 21.64,
+          "llm_inference": 526.5,
+          "total_worker_frame_time": 550.3
+        },
+        "status": "success",
+        "job_id": "job_1c4e82c1-47fd-4f20-8f68-95b8f99f11db"
+      },
+      {
+        "job_id_for_frame": "job_1c4e82c1-47fd-4f20-8f68-95b8f99f11db",
+        "frame_idx": 270,
+        "timestamp_ms": 9000,
+        "description": "In this scene, there is a tree with a large root system, a cave-like structure made of grass and rocks, and a small hill or mound of grass.",
+        "processing_times_ms": {
+          "image_encode": 116.82,
+          "llm_inference": 1443.37,
+          "total_worker_frame_time": 1566.68
+        },
+        "status": "success",
+        "job_id": "job_1c4e82c1-47fd-4f20-8f68-95b8f99f11db"
+      }
+    ]
+  },
+  "error_message": null,
+  "traceback": null,
+  "processing_started_at": 1746942497.6234798,
+  "completed_at": 1746942504.8760633,
+  "failed_at": null,
+  "progress": 99,
+  "frames_processed": 10,
+  "total_frames": 10
+}
