@@ -8,3 +8,5 @@ einops
 pyvips-binary
 pyvips
 accelerate
+opencv-python
+matplotlib

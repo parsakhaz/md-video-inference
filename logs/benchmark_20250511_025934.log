@@ -1,0 +1,11 @@
+2025-05-11 02:59:34,395 - benchmark_utility - INFO - Benchmark logging enabled. Logs will be saved to logs/benchmark_20250511_025934.log
+2025-05-11 02:59:34,461 - benchmark_utility - INFO - CUDA available: True
+2025-05-11 02:59:34,462 - benchmark_utility - INFO - CUDA device count: 2
+2025-05-11 02:59:34,462 - benchmark_utility - INFO - CUDA device: NVIDIA GeForce RTX 4090
+2025-05-11 02:59:34,462 - benchmark_utility - INFO - Total GPU memory: 23.64 GB
+2025-05-11 02:59:34,462 - benchmark_utility - INFO - ================================================================================
+2025-05-11 02:59:34,462 - benchmark_utility - INFO - Starting Full Benchmark Suite
+2025-05-11 02:59:34,463 - benchmark_utility - INFO - ================================================================================
+2025-05-11 02:59:34,463 - benchmark_utility - INFO - 
+Testing with 1 models...
+2025-05-11 02:59:34,463 - benchmark_utility - INFO - Running benchmark with 1 models...

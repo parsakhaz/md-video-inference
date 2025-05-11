@@ -6,7 +6,6 @@ This script tests different numbers of models and identifies the sweet spot base
 
 import argparse
 import sys
-import os
 from classes.benchmark_utility import BenchmarkUtility
 
 def parse_arguments():
@@ -41,16 +40,6 @@ def main():
     """Main function"""
     # Parse arguments
     args = parse_arguments()
-    
-    # Ensure classes directory exists
-    if not os.path.exists('classes'):
-        os.makedirs('classes')
-        
-    # Create an empty __init__.py in the classes directory to make it a proper package
-    init_path = os.path.join('classes', '__init__.py')
-    if not os.path.exists(init_path):
-        with open(init_path, 'w') as f:
-            f.write('# Package initialization file\n')
     
     try:
         # Create benchmark utility
