@@ -1,0 +1,123 @@
+{
+  "gpu_info": {
+    "cuda_available": true,
+    "device_count": 2,
+    "device_name": "NVIDIA GeForce RTX 4090",
+    "total_memory": 23.64288330078125
+  },
+  "results": [
+    {
+      "total_frames": 69,
+      "metrics": {
+        "Download time": 0.21146655082702637,
+        "Frame extraction time": 8.997518301010132,
+        "Processing time": 70.4929928779602
+      },
+      "encoding_stats": {
+        "avg": 100.4314042519832,
+        "min": 94.33484077453613,
+        "max": 344.4480895996094
+      },
+      "inference_stats": {
+        "avg": 918.9079602559408,
+        "min": 620.4235553741455,
+        "max": 1276.747226715088
+      },
+      "total_time": 79.70228481292725,
+      "avg_time_per_frame_ms": 1155.1055769989455,
+      "num_models": 1
+    },
+    {
+      "total_frames": 69,
+      "metrics": {
+        "Download time": 0.26162099838256836,
+        "Frame extraction time": 8.994298458099365,
+        "Processing time": 69.79595351219177
+      },
+      "encoding_stats": {
+        "avg": 178.24570683465487,
+        "min": 97.72300720214844,
+        "max": 201.9946575164795
+      },
+      "inference_stats": {
+        "avg": 1751.2052024620166,
+        "min": 920.2616214752197,
+        "max": 2171.008348464966
+      },
+      "total_time": 79.05226445198059,
+      "avg_time_per_frame_ms": 1145.6849920576897,
+      "num_models": 2
+    },
+    {
+      "total_frames": 69,
+      "metrics": {
+        "Download time": 0.18883299827575684,
+        "Frame extraction time": 8.923462867736816,
+        "Processing time": 70.60239958763123
+      },
+      "encoding_stats": {
+        "avg": 260.05909753882366,
+        "min": 250.29754638671875,
+        "max": 307.3139190673828
+      },
+      "inference_stats": {
+        "avg": 2669.9488923169565,
+        "min": 1633.3491802215576,
+        "max": 3484.285593032837
+      },
+      "total_time": 79.71507906913757,
+      "avg_time_per_frame_ms": 1155.291001001994,
+      "num_models": 3
+    },
+    {
+      "total_frames": 69,
+      "metrics": {
+        "Download time": 0.22107601165771484,
+        "Frame extraction time": 8.901221990585327,
+        "Processing time": 79.609938621521
+      },
+      "encoding_stats": {
+        "avg": 338.8655047485794,
+        "min": 94.25592422485352,
+        "max": 383.4528923034668
+      },
+      "inference_stats": {
+        "avg": 4027.083320894103,
+        "min": 944.1633224487305,
+        "max": 5024.592399597168
+      },
+      "total_time": 88.73269414901733,
+      "avg_time_per_frame_ms": 1285.9810746234398,
+      "num_models": 4
+    },
+    {
+      "total_frames": 69,
+      "metrics": {
+        "Download time": 0.23319697380065918,
+        "Frame extraction time": 8.973037242889404,
+        "Processing time": 87.87113571166992
+      },
+      "encoding_stats": {
+        "avg": 423.56039475703585,
+        "min": 343.4264659881592,
+        "max": 477.5228500366211
+      },
+      "inference_stats": {
+        "avg": 5601.6425049823265,
+        "min": 3712.2976779937744,
+        "max": 6817.465782165527
+      },
+      "total_time": 97.07779717445374,
+      "avg_time_per_frame_ms": 1406.9245967312136,
+      "num_models": 5
+    }
+  ],
+  "sweet_spot": {
+    "sweet_spot": 2,
+    "min_processing_time": 69.79595351219177,
+    "min_frame_time": 1145.6849920576897,
+    "sweet_spot_processing_time": 2,
+    "sweet_spot_frame_time": 2
+  },
+  "plot_file": "benchmark_plots_20250511_025934.png"
+}
