@@ -1,0 +1,11 @@
+2025-05-11 03:19:17,344 - benchmark_utility - INFO - Benchmark logging enabled. Logs will be saved to logs/benchmark_20250511_031917.log
+2025-05-11 03:19:17,758 - benchmark_utility - INFO - CUDA available: True
+2025-05-11 03:19:17,758 - benchmark_utility - INFO - CUDA device count: 2
+2025-05-11 03:19:17,758 - benchmark_utility - INFO - CUDA device: NVIDIA H100 PCIe
+2025-05-11 03:19:17,758 - benchmark_utility - INFO - Total GPU memory: 79.10 GB
+2025-05-11 03:19:17,758 - benchmark_utility - INFO - ================================================================================
+2025-05-11 03:19:17,758 - benchmark_utility - INFO - Starting Full Benchmark Suite
+2025-05-11 03:19:17,758 - benchmark_utility - INFO - ================================================================================
+2025-05-11 03:19:17,758 - benchmark_utility - INFO - 
+Testing with 1 models...
+2025-05-11 03:19:17,758 - benchmark_utility - INFO - Running benchmark with 1 models...

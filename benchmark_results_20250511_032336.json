@@ -1,0 +1,228 @@
+{
+  "gpu_info": {
+    "cuda_available": true,
+    "device_count": 2,
+    "device_name": "NVIDIA H100 PCIe",
+    "total_memory": 79.09674072265625
+  },
+  "results": [
+    {
+      "total_frames": 105,
+      "metrics": {
+        "Download time": 0.147993803024292,
+        "Frame extraction time": 9.586353302001953,
+        "Processing time": 133.0801501274109
+      },
+      "encoding_stats": {
+        "avg": 77.42943309602283,
+        "min": 68.72272491455078,
+        "max": 484.77911949157715
+      },
+      "inference_stats": {
+        "avg": 1187.680199032738,
+        "min": 948.8358497619629,
+        "max": 1779.8130512237549
+      },
+      "total_time": 142.8154079914093,
+      "avg_time_per_frame_ms": 1360.1467427753266,
+      "num_models": 1
+    },
+    {
+      "total_frames": 105,
+      "metrics": {
+        "Download time": 0.15027594566345215,
+        "Frame extraction time": 9.7803795337677,
+        "Processing time": 124.3765184879303
+      },
+      "encoding_stats": {
+        "avg": 129.65616498674666,
+        "min": 83.79197120666504,
+        "max": 181.30731582641602
+      },
+      "inference_stats": {
+        "avg": 2137.3388267698742,
+        "min": 1068.7696933746338,
+        "max": 3044.1794395446777
+      },
+      "total_time": 134.30834460258484,
+      "avg_time_per_frame_ms": 1279.127091453189,
+      "num_models": 2
+    },
+    {
+      "total_frames": 105,
+      "metrics": {
+        "Download time": 0.15772461891174316,
+        "Frame extraction time": 9.363361597061157,
+        "Processing time": 123.50696778297424
+      },
+      "encoding_stats": {
+        "avg": 187.89583841959634,
+        "min": 169.0382957458496,
+        "max": 244.92192268371582
+      },
+      "inference_stats": {
+        "avg": 3156.3081196376256,
+        "min": 2619.3466186523438,
+        "max": 4458.696126937866
+      },
+      "total_time": 133.02925205230713,
+      "avg_time_per_frame_ms": 1266.9452576410204,
+      "num_models": 3
+    },
+    {
+      "total_frames": 105,
+      "metrics": {
+        "Download time": 0.19832921028137207,
+        "Frame extraction time": 9.750594854354858,
+        "Processing time": 135.63091731071472
+      },
+      "encoding_stats": {
+        "avg": 244.73454384576706,
+        "min": 74.95546340942383,
+        "max": 320.3396797180176
+      },
+      "inference_stats": {
+        "avg": 4641.138067699614,
+        "min": 1293.1263446807861,
+        "max": 6451.579570770264
+      },
+      "total_time": 145.58077239990234,
+      "avg_time_per_frame_ms": 1386.4835466657366,
+      "num_models": 4
+    },
+    {
+      "total_frames": 105,
+      "metrics": {
+        "Download time": 0.13623261451721191,
+        "Frame extraction time": 9.789602279663086,
+        "Processing time": 232.25477743148804
+      },
+      "encoding_stats": {
+        "avg": 397.8537718454997,
+        "min": 283.616304397583,
+        "max": 2176.2492656707764
+      },
+      "inference_stats": {
+        "avg": 10124.979870659965,
+        "min": 6892.892360687256,
+        "max": 13091.564178466797
+      },
+      "total_time": 242.18392419815063,
+      "avg_time_per_frame_ms": 2306.5135637919107,
+      "num_models": 5
+    },
+    {
+      "total_frames": 105,
+      "metrics": {
+        "Download time": 0.15862393379211426,
+        "Frame extraction time": 9.72803807258606,
+        "Processing time": 246.01050686836243
+      },
+      "encoding_stats": {
+        "avg": 369.10540489923386,
+        "min": 185.97793579101562,
+        "max": 448.25005531311035
+      },
+      "inference_stats": {
+        "avg": 13006.122897920155,
+        "min": 2836.672067642212,
+        "max": 17523.5595703125
+      },
+      "total_time": 255.90179347991943,
+      "avg_time_per_frame_ms": 2437.159937903995,
+      "num_models": 6
+    },
+    {
+      "total_frames": 105,
+      "metrics": {
+        "Download time": 0.18887901306152344,
+        "Frame extraction time": 9.611440181732178,
+        "Processing time": 265.28007340431213
+      },
+      "encoding_stats": {
+        "avg": 437.3005503699893,
+        "min": 408.64062309265137,
+        "max": 522.2690105438232
+      },
+      "inference_stats": {
+        "avg": 16356.393010275704,
+        "min": 12505.754947662354,
+        "max": 21007.795810699463
+      },
+      "total_time": 275.085857629776,
+      "avg_time_per_frame_ms": 2619.8653107597715,
+      "num_models": 7
+    },
+    {
+      "total_frames": 105,
+      "metrics": {
+        "Download time": 1.7893366813659668,
+        "Frame extraction time": 9.43707275390625,
+        "Processing time": 275.45200419425964
+      },
+      "encoding_stats": {
+        "avg": 564.5679837181455,
+        "min": 95.76225280761719,
+        "max": 649.1632461547852
+      },
+      "inference_stats": {
+        "avg": 19485.367220924014,
+        "min": 1318.7062740325928,
+        "max": 24824.426889419556
+      },
+      "total_time": 286.68555879592896,
+      "avg_time_per_frame_ms": 2730.3386551993235,
+      "num_models": 8
+    },
+    {
+      "total_frames": 105,
+      "metrics": {
+        "Download time": 0.9780077934265137,
+        "Frame extraction time": 9.04294204711914,
+        "Processing time": 265.18214106559753
+      },
+      "encoding_stats": {
+        "avg": 632.9404399508521,
+        "min": 388.46445083618164,
+        "max": 799.3123531341553
+      },
+      "inference_stats": {
+        "avg": 20672.766360782443,
+        "min": 12766.980171203613,
+        "max": 25271.716833114624
+      },
+      "total_time": 275.2092819213867,
+      "avg_time_per_frame_ms": 2621.0407802036834,
+      "num_models": 9
+    },
+    {
+      "total_frames": 105,
+      "metrics": {
+        "Download time": 0.14063096046447754,
+        "Frame extraction time": 9.499606847763062,
+        "Processing time": 262.99558997154236
+      },
+      "encoding_stats": {
+        "avg": 725.3796713692801,
+        "min": 314.716100692749,
+        "max": 900.0349044799805
+      },
+      "inference_stats": {
+        "avg": 22574.092167899722,
+        "min": 9039.74199295044,
+        "max": 28613.82555961609
+      },
+      "total_time": 272.640216588974,
+      "avg_time_per_frame_ms": 2596.573491323562,
+      "num_models": 10
+    }
+  ],
+  "sweet_spot": {
+    "sweet_spot": 3,
+    "min_processing_time": 123.50696778297424,
+    "min_frame_time": 1266.9452576410204,
+    "sweet_spot_processing_time": 3,
+    "sweet_spot_frame_time": 3
+  },
+  "plot_file": "benchmark_plots_20250511_032336.png"
+}

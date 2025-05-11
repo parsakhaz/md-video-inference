@@ -10,3 +10,4 @@ pyvips
 accelerate
 opencv-python
 matplotlib
+cog
