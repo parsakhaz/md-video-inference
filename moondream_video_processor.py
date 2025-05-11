@@ -32,10 +32,20 @@ def download_model_assets():
 
 moondream_image = (
     modal.Image.debian_slim(python_version="3.10")
+    .run_commands(
+        # Install PyTorch with CUDA support specifically
+        "pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118"
+    )
     .pip_install(
-        "transformers==4.39.3", "torch==2.1.2", "torchaudio", "torchvision",
+        "transformers==4.39.3", 
         "Pillow==10.0.0", "opencv-python-headless==4.8.0.76", "numpy==1.24.0",
-        "requests==2.28.0", "ffmpeg-python==0.2.0", "accelerate", "fastapi",
+        "requests==2.28.0", "ffmpeg-python==0.2.0", "fastapi",
+        "einops",  # Required by Moondream model
+        "pillow",
+        "einops",
+        "pyvips-binary",
+        "pyvips",
+        "accelerate"
     )
     .apt_install("ffmpeg")
     .run_function(download_model_assets)
@@ -117,10 +127,11 @@ class FrameExtractor:
         return frames_data, original_fps, extraction_time
 
 # --- Moondream Worker Class (Same as before) ---
-@app.cls(gpu="a10g", timeout=180, image=moondream_image, max_containers=30, min_containers=1)
+@app.cls(gpu="a10g", timeout=180, image=moondream_image, max_containers=10, min_containers=1)
 class MoondreamWorker:
     @modal.enter()
     def load_model(self):
+        import torch
         self.device = "cuda"; self.dtype = torch.float16
         self.tokenizer = AutoTokenizer.from_pretrained(MODEL_ID, revision=REVISION, cache_dir=MODEL_CACHE_PATH)
         self.model = AutoModelForCausalLM.from_pretrained(
@@ -132,6 +143,7 @@ class MoondreamWorker:
 
     @modal.method()
     def describe_frame(self, frame_task: Dict[str, Any]) -> Dict[str, Any]:
+        import torch
         job_id_for_frame = frame_task['job_id_for_frame'] # Changed from video_id to avoid confusion
         frame_idx, frame_bytes_jpg = frame_task['frame_idx'], frame_task['frame_bytes_jpg']
         original_fps, question = frame_task['original_fps'], frame_task.get('question', "Describe this scene.")
@@ -145,7 +157,7 @@ class MoondreamWorker:
                 start_inference_time = time.time()
                 answer = self.model.answer_question(
                     image_embeds=image_embeds, question=question,
-                    tokenizer=self.tokenizer, max_new_tokens=128
+                    tokenizer=self.tokenizer
                 )
                 inference_time_ms = (time.time() - start_inference_time) * 1000
             timestamp_ms = int(frame_idx / original_fps * 1000) if original_fps > 0 else 0
