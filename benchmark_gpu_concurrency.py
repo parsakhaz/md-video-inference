@@ -14,7 +14,9 @@ def parse_arguments():
     parser.add_argument(
         "--video_url", 
         type=str, 
-        default="https://videos.pexels.com/video-files/31554443/13448277_1080_1920_25fps.mp4",
+        default="https://cdn.pixabay.com/video/2024/05/29/214409_tiny.mp4?download",
+        # shorter video: https://videos.pexels.com/video-files/31554443/13448277_1080_1920_25fps.mp4
+        # longer video: https://cdn.pixabay.com/video/2024/05/29/214409_tiny.mp4?download
         help="URL of the video to analyze"
     )
     parser.add_argument(

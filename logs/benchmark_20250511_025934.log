@@ -9,3 +9,35 @@
 2025-05-11 02:59:34,463 - benchmark_utility - INFO - 
 Testing with 1 models...
 2025-05-11 02:59:34,463 - benchmark_utility - INFO - Running benchmark with 1 models...
+2025-05-11 03:01:39,513 - benchmark_utility - INFO - Benchmark with 1 models completed successfully
+2025-05-11 03:01:39,513 - benchmark_utility - INFO - Processing time: N/A seconds
+2025-05-11 03:01:39,514 - benchmark_utility - INFO - Average time per frame: N/A ms
+2025-05-11 03:01:39,643 - benchmark_utility - INFO - GPU memory allocated: 0.01 GB
+2025-05-11 03:01:39,643 - benchmark_utility - INFO - GPU memory reserved: 4.16 GB
+2025-05-11 03:01:39,644 - benchmark_utility - INFO - 
+Testing with 2 models...
+2025-05-11 03:01:39,644 - benchmark_utility - INFO - Running benchmark with 2 models...
+2025-05-11 03:03:01,849 - benchmark_utility - INFO - Benchmark with 2 models completed successfully
+2025-05-11 03:03:01,850 - benchmark_utility - INFO - Processing time: N/A seconds
+2025-05-11 03:03:01,850 - benchmark_utility - INFO - Average time per frame: N/A ms
+2025-05-11 03:03:01,988 - benchmark_utility - INFO - GPU memory allocated: 0.02 GB
+2025-05-11 03:03:01,989 - benchmark_utility - INFO - GPU memory reserved: 8.33 GB
+2025-05-11 03:03:01,989 - benchmark_utility - INFO - 
+Testing with 3 models...
+2025-05-11 03:03:01,990 - benchmark_utility - INFO - Running benchmark with 3 models...
+2025-05-11 03:04:26,983 - benchmark_utility - INFO - Benchmark with 3 models completed successfully
+2025-05-11 03:04:26,984 - benchmark_utility - INFO - Processing time: N/A seconds
+2025-05-11 03:04:26,985 - benchmark_utility - INFO - Average time per frame: N/A ms
+2025-05-11 03:04:27,150 - benchmark_utility - INFO - GPU memory allocated: 0.02 GB
+2025-05-11 03:04:27,151 - benchmark_utility - INFO - GPU memory reserved: 12.42 GB
+2025-05-11 03:04:27,151 - benchmark_utility - INFO - 
+Testing with 4 models...
+2025-05-11 03:04:27,152 - benchmark_utility - INFO - Running benchmark with 4 models...
+2025-05-11 03:06:02,149 - benchmark_utility - INFO - Benchmark with 4 models completed successfully
+2025-05-11 03:06:02,150 - benchmark_utility - INFO - Processing time: N/A seconds
+2025-05-11 03:06:02,150 - benchmark_utility - INFO - Average time per frame: N/A ms
+2025-05-11 03:06:02,322 - benchmark_utility - INFO - GPU memory allocated: 0.03 GB
+2025-05-11 03:06:02,322 - benchmark_utility - INFO - GPU memory reserved: 16.59 GB
+2025-05-11 03:06:02,323 - benchmark_utility - INFO - 
+Testing with 5 models...
+2025-05-11 03:06:02,323 - benchmark_utility - INFO - Running benchmark with 5 models...
