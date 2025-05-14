@@ -80,68 +80,65 @@ class VideoDownloader:
     def download(self, video_url: str) -> Tuple[str, float]:
         start_time = time.time()
         try:
+            # Parse URL and get just the path component for filename purposes
             parsed_url = urllib.parse.urlparse(video_url)
             path_part = parsed_url.path
+            
+            # Get just the base filename without query parameters for storage
             original_basename = os.path.basename(path_part)
-
+            
+            # Generate a safe filename
             name_candidate = ""
-            ext_candidate = ".mp4" # Default extension
+            ext_candidate = ".mp4"  # Default extension
 
             if original_basename:
                 name_part, ext_part = os.path.splitext(original_basename)
-                if name_part: # Use name part if it exists
+                if name_part:  # Use name part if it exists
                     name_candidate = name_part
-                if ext_part and len(ext_part) > 1: # Use extension if valid
+                if ext_part and len(ext_part) > 1:  # Use extension if valid
                     ext_candidate = ext_part
             
-            if not name_candidate: # Fallback if no usable name from URL path
+            if not name_candidate:  # Fallback if no usable name from URL path
                 name_candidate = "video_download"
 
             # Sanitize and shorten the name part
             safe_name_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-"
             sanitized_name_part = "".join(c for c in name_candidate if c in safe_name_chars)
-            if not sanitized_name_part: # If all chars were stripped (e.g. name was all symbols)
+            if not sanitized_name_part:  # If all chars were stripped
                 sanitized_name_part = "video"
-            sanitized_name_part = sanitized_name_part[:50] # Limit length of the name segment
+            sanitized_name_part = sanitized_name_part[:30]  # Limit length of the name segment
 
             # Ensure extension is simple and common
-            safe_ext = ".mp4" # Default
-            # Basic validation for extension: starts with '.', alphanumeric, reasonable length
-            # Avoid using potentially malicious or overly complex extensions
+            safe_ext = ".mp4"  # Default
             if ext_candidate.startswith(".") and \
                all(c.isalnum() for c in ext_candidate[1:]) and \
                1 < len(ext_candidate) < 6:
                 safe_ext = ext_candidate.lower()
             
             # Final filename: sanitized name + short UUID + safe extension
-            # UUID ensures uniqueness, preventing clashes from different URLs sanitizing to similar names
             fname = f"{sanitized_name_part}_{uuid.uuid4().hex[:8]}{safe_ext}"
             
             video_filename = os.path.join(self.temp_dir, fname)
 
-            # Ensure the specific directory for this download exists (if multiple downloads use same downloader instance)
-            # For this class structure, self.temp_dir is fine for one download per instance.
-
             print(f"Attempting to download {video_url} to {video_filename}")
-            with requests.get(video_url, stream=True, timeout=120) as r: # Increased timeout for download
+            # Use the full URL (with query parameters) for the actual download
+            with requests.get(video_url, stream=True, timeout=120) as r:
                 r.raise_for_status()
                 with open(video_filename, 'wb') as f:
-                    for chunk in r.iter_content(chunk_size=8192 * 4): # Slightly larger chunk size
+                    for chunk in r.iter_content(chunk_size=8192 * 4):
                         f.write(chunk)
             
             download_time = time.time() - start_time
             print(f"Download complete in {download_time:.2f}s.")
             return video_filename, download_time
         except Exception as e:
-            # self.cleanup() # Cleanup might be too aggressive here if called before _process_video_pipeline_internal's finally block
-            print(f"Error during video download: {e}") # Log error
-            raise # Re-raise to be handled by the calling function
+            print(f"Error during video download: {e}")
+            raise
 
     def cleanup(self):
-        # Remove the parent directory, which contains the 'downloads' subdir and any other instance-specific temp files
         if os.path.exists(self.temp_dir_parent):
             print(f"Cleaning up temp directory: {self.temp_dir_parent}")
-            shutil.rmtree(self.temp_dir_parent, ignore_errors=True) # ignore_errors for robustness
+            shutil.rmtree(self.temp_dir_parent, ignore_errors=True)
 
 
 # --- Updated FrameExtractor using FFmpeg Direct Output ---
